@@ -372,19 +372,44 @@
   </button>
 </nav>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  const SUPABASE_URL = "https://flzfdqwgecnsbhfrdxlu.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_X6YB5NqmASAc2lewITE64g_PYLa6vDJ";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const STORAGE_KEY = "inventory_app_products_v1";
   const HISTORY_KEY = "inventory_app_history_v1";
 
   let products = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
   let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
 
-  function save() {
+  async function save() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    const { error } = await supabaseClient
+      .from('inventory')
+    .upsert({
+  id: 1,
+  products: products,
+  history: history
+    });
+    if (error) console.error("Supabase保存エラー:", error);
     render();
   }
-
+  async function loadFromSupabase() {
+    const { data, error } = await supabaseClient
+    .from('inventory')
+    .select('*')
+    .eq('id', 1)
+    .single();
+    if (error) {
+      console.error("Supabase読込エラー:", error);
+      return;
+      }
+    products = data.products || [];
+    history = data.history || [];
+    render();
+    }
   function addHistory(text) {
     history.unshift({
       text: text,
@@ -640,7 +665,7 @@
       .replaceAll("'", "&#039;");
   }
 
-  render();
+  loadFromSupabase();
 </script>
 
 </body>
