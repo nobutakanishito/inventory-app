@@ -1,0 +1,17 @@
+{
+  "name": "マイ在庫管理",
+  "short_name": "在庫管理",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f9",
+  "theme_color": "#173047",
+  "icons": [
+    {
+      "src": "./apple-touch-icon.PNG",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
