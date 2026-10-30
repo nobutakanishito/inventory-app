@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <title>マイ在庫管理</title>
+
+  <meta name="theme-color" content="#173047">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="在庫管理">
+
+  <!-- アイコンは後で設定します -->
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      background: #f4f7f9;
+      color: #17212b;
+      padding-bottom: 90px;
+    }
+
+    header {
+      background: #173047;
+      color: white;
+      padding: 34px 22px 28px;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 0;
+      color: #d6e0e7;
+      font-size: 14px;
+    }
+
+    main {
+      max-width: 700px;
+      margin: auto;
+      padding: 18px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      background: white;
+      border: 1px solid #dce4e9;
+      border-radius: 18px;
+      padding: 20px;
+    }
+
+    .stat-label {
+      color: #71808c;
+      font-size: 14px;
+    }
+
+    .stat-value {
+      font-size: 34px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .notice {
+      background: #fff9e9;
+      border: 1px solid #efd589;
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin: 22px 0 12px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #dce4e9;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 14px 0 6px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #ccd6dd;
+      border-radius: 12px;
+      font-size: 16px;
+      background: white;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .primary {
+      width: 100%;
+      background: #286b91;
+      color: white;
+      margin-top: 16px;
+    }
+
+    .secondary {
+      background: #e8f1f6;
+      color: #245b78;
+    }
+
+    .danger {
+      background: #ffe7e4;
+      color: #b53a31;
+    }
+
+    .item {
+      background: white;
+      border: 1px solid #dce4e9;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .item-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .item-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .item-type {
+      font-size: 13px;
+      color: #71808c;
+      margin-top: 4px;
+    }
+
+    .stock {
+      font-size: 24px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .stock small {
+      font-size: 12px;
+      color: #71808c;
+      font-weight: 400;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .ok {
+      background: #e5f5e9;
+      color: #287a3d;
+    }
+
+    .low {
+      background: #ffe8e5;
+      color: #c23e34;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .empty {
+      text-align: center;
+      color: #788792;
+      padding: 30px 10px;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 72px;
+      background: rgba(255,255,255,.96);
+      border-top: 1px solid #dce4e9;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    nav button {
+      background: transparent;
+      color: #61727e;
+      border-radius: 0;
+      font-size: 12px;
+    }
+
+    nav button.active {
+      color: #286b91;
+      font-weight: 700;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .settings-button {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .history-row {
+      padding: 12px 0;
+      border-bottom: 1px solid #e4eaee;
+      font-size: 14px;
+    }
+
+    .history-time {
+      color: #7b8993;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>マイ在庫管理</h1>
+  <p>個人用・この端末内に保存</p>
+</header>
+
+<main>
+
+  <section id="homePage" class="page active">
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">登録商品数</div>
+        <div id="productCount" class="stat-value">0</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">在庫不足</div>
+        <div id="lowCount" class="stat-value">0</div>
+      </div>
+    </div>
+
+    <div class="notice">
+      データはこのブラウザ内に保存されます。
+      Safariのデータを削除すると在庫データも消える可能性があります。
+    </div>
+
+    <h2>在庫不足</h2>
+    <div id="lowStockList"></div>
+
+    <h2>すぐに記録</h2>
+
+    <div class="card">
+      <label>商品</label>
+      <select id="quickProduct"></select>
+
+      <label>数量</label>
+      <input id="quickAmount" type="number" min="1" value="1">
+
+      <div class="actions">
+        <button class="secondary" onclick="quickChange(1)">＋ 入庫</button>
+        <button class="danger" onclick="quickChange(-1)">− 使用</button>
+      </div>
+    </div>
+
+  </section>
+
+  <section id="inventoryPage" class="page">
+
+    <h2>在庫一覧</h2>
+
+    <div id="inventoryList"></div>
+
+    <h2>商品を登録</h2>
+
+    <div class="card">
+
+      <label>商品名</label>
+      <input id="newName" placeholder="例：No.6">
+
+      <label>種別</label>
+      <input id="newType" placeholder="例：ビニール袋">
+
+      <label>現在の在庫</label>
+      <input id="newStock" type="number" min="0" value="0">
+
+      <label>最低在庫</label>
+      <input id="newMinimum" type="number" min="0" value="10">
+
+      <button class="primary" onclick="addProduct()">商品を登録</button>
+
+    </div>
+
+  </section>
+
+  <section id="settingsPage" class="page">
+
+    <h2>履歴</h2>
+
+    <div class="card">
+      <div id="historyList"></div>
+    </div>
+
+    <h2>設定</h2>
+
+    <div class="card">
+      <button class="danger settings-button" onclick="clearAllData()">
+        すべてのデータを削除
+      </button>
+    </div>
+
+  </section>
+
+</main>
+
+<nav>
+  <button id="homeNav" class="active" onclick="showPage('home')">
+    🏠<br>ホーム
+  </button>
+
+  <button id="inventoryNav" onclick="showPage('inventory')">
+    📦<br>在庫
+  </button>
+
+  <button id="settingsNav" onclick="showPage('settings')">
+    ⚙️<br>設定
+  </button>
+</nav>
+
+<script>
+  const STORAGE_KEY = "inventory_app_products_v1";
+  const HISTORY_KEY = "inventory_app_history_v1";
+
+  let products = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    render();
+  }
+
+  function addHistory(text) {
+    history.unshift({
+      text: text,
+      time: new Date().toLocaleString("ja-JP")
+    });
+
+    if (history.length > 100) {
+      history = history.slice(0, 100);
+    }
+  }
+
+  function addProduct() {
+    const name = document.getElementById("newName").value.trim();
+    const type = document.getElementById("newType").value.trim();
+    const stock = Number(document.getElementById("newStock").value);
+    const minimum = Number(document.getElementById("newMinimum").value);
+
+    if (!name) {
+      alert("商品名を入力してください");
+      return;
+    }
+
+    products.push({
+      id: Date.now(),
+      name,
+      type,
+      stock: Math.max(0, stock || 0),
+      minimum: Math.max(0, minimum || 0)
+    });
+
+    addHistory(name + " を登録しました");
+
+    document.getElementById("newName").value = "";
+    document.getElementById("newType").value = "";
+    document.getElementById("newStock").value = "0";
+    document.getElementById("newMinimum").value = "10";
+
+    save();
+  }
+
+  function changeStock(id, amount) {
+    const product = products.find(p => p.id === id);
+
+    if (!product) return;
+
+    const oldStock = product.stock;
+    product.stock = Math.max(0, product.stock + amount);
+
+    const difference = product.stock - oldStock;
+
+    if (difference > 0) {
+      addHistory(product.name + " ＋" + difference);
+    } else if (difference < 0) {
+      addHistory(product.name + " " + difference);
+    }
+
+    save();
+  }
+
+  function quickChange(direction) {
+    const id = Number(document.getElementById("quickProduct").value);
+    const amount = Math.max(
+      1,
+      Number(document.getElementById("quickAmount").value) || 1
+    );
+
+    if (!id) {
+      alert("商品を登録してください");
+      return;
+    }
+
+    changeStock(id, amount * direction);
+  }
+
+  function deleteProduct(id) {
+    const product = products.find(p => p.id === id);
+
+    if (!product) return;
+
+    if (!confirm(product.name + " を削除しますか？")) return;
+
+    products = products.filter(p => p.id !== id);
+
+    addHistory(product.name + " を削除しました");
+
+    save();
+  }
+
+  function render() {
+    document.getElementById("productCount").textContent = products.length;
+
+    const lowProducts = products.filter(
+      p => p.stock <= p.minimum
+    );
+
+    document.getElementById("lowCount").textContent = lowProducts.length;
+
+    const quick = document.getElementById("quickProduct");
+
+    if (products.length === 0) {
+      quick.innerHTML = '<option value="">商品がありません</option>';
+    } else {
+      quick.innerHTML = products.map(p =>
+        `<option value="${p.id}">${escapeHtml(p.name)}</option>`
+      ).join("");
+    }
+
+    const inventoryList = document.getElementById("inventoryList");
+
+    if (products.length === 0) {
+      inventoryList.innerHTML =
+        '<div class="empty">まだ商品が登録されていません。</div>';
+    } else {
+      inventoryList.innerHTML = products.map(product => `
+        <div class="item">
+
+          <div class="item-top">
+
+            <div>
+              <div class="item-name">
+                ${escapeHtml(product.name)}
+              </div>
+
+              <div class="item-type">
+                ${escapeHtml(product.type || "種別なし")}
+              </div>
+
+              <span class="badge ${
+                product.stock <= product.minimum ? "low" : "ok"
+              }">
+                ${
+                  product.stock <= product.minimum
+                  ? "在庫不足"
+                  : "在庫あり"
+                }
+              </span>
+            </div>
+
+            <div class="stock">
+              ${product.stock}
+              <small>個</small>
+            </div>
+
+          </div>
+
+          <div class="actions">
+            <button class="secondary"
+              onclick="changeStock(${product.id}, 1)">
+              ＋1
+            </button>
+
+            <button class="secondary"
+              onclick="changeStock(${product.id}, 10)">
+              ＋10
+            </button>
+
+            <button class="danger"
+              onclick="changeStock(${product.id}, -1)">
+              −1
+            </button>
+
+            <button class="danger"
+              onclick="deleteProduct(${product.id})">
+              削除
+            </button>
+          </div>
+
+        </div>
+      `).join("");
+    }
+
+    const lowList = document.getElementById("lowStockList");
+
+    if (lowProducts.length === 0) {
+      lowList.innerHTML =
+        '<div class="card">現在、在庫不足の商品はありません。</div>';
+    } else {
+      lowList.innerHTML = lowProducts.map(product => `
+        <div class="item">
+          <div class="item-top">
+
+            <div>
+              <div class="item-name">
+                ${escapeHtml(product.name)}
+              </div>
+
+              <div class="item-type">
+                最低在庫 ${product.minimum}個
+              </div>
+
+              <span class="badge low">
+                在庫不足
+              </span>
+            </div>
+
+            <div class="stock">
+              ${product.stock}
+              <small>個</small>
+            </div>
+
+          </div>
+        </div>
+      `).join("");
+    }
+
+    const historyList = document.getElementById("historyList");
+
+    if (history.length === 0) {
+      historyList.innerHTML =
+        '<div class="empty">履歴はありません。</div>';
+    } else {
+      historyList.innerHTML = history.map(item => `
+        <div class="history-row">
+          ${escapeHtml(item.text)}
+          <div class="history-time">
+            ${escapeHtml(item.time)}
+          </div>
+        </div>
+      `).join("");
+    }
+  }
+
+  function showPage(page) {
+    document.querySelectorAll(".page").forEach(el =>
+      el.classList.remove("active")
+    );
+
+    document.querySelectorAll("nav button").forEach(el =>
+      el.classList.remove("active")
+    );
+
+    document.getElementById(page + "Page").classList.add("active");
+    document.getElementById(page + "Nav").classList.add("active");
+
+    window.scrollTo(0, 0);
+  }
+
+  function clearAllData() {
+    if (!confirm("すべての商品と履歴を削除しますか？")) return;
+
+    products = [];
+    history = [];
+
+    save();
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  render();
+</script>
+
+</body>
+</html>
